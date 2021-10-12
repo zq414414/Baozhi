@@ -1,0 +1,104 @@
+
+Sub 检查类去重()
+'
+' A-G
+' 检查类都是ONCE
+' A住院号；E开始时间；G频次
+' 基于骨科一病区“检查类”编写
+
+
+'
+    Dim hang, lie
+    hang = ActiveSheet.UsedRange.Rows.Count
+'    lie = ActiveSheet.UsedRange.Columns.Count
+    
+    Range("A1").Select
+    ActiveSheet.Sort.SortFields.Clear
+    ActiveSheet.Sort.SortFields.Add Key:=Range("A2:A" + Trim(hang)) _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+    ActiveSheet.Sort.SortFields.Add Key:=Range("E2:E" + Trim(hang)) _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+    With ActiveSheet.Sort
+        .SetRange Range("A1:G" + Trim(hang))
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    
+    
+    Range("H1").Select
+    ActiveCell.FormulaR1C1 = "病人号"
+    Range("H2").Select
+    ActiveCell.FormulaR1C1 = "1"
+    Range("H3").Select
+    ActiveCell.FormulaR1C1 = "=IF(RC[-7]=R[-1]C[-7],R[-1]C,R[-1]C+1)"
+
+    Range("H3").Select
+    Selection.AutoFill Destination:=Range("H3:H" + Trim(hang))
+    Range("H" + Trim(hang + 1)).Select
+    
+    Range("I1").Select
+    ActiveCell.FormulaR1C1 = "可删除"
+    Range("I2").Select
+    ActiveCell.FormulaR1C1 = "0"
+    Range("I3").Select
+    ActiveCell.FormulaR1C1 = "=IF(AND(RC[-8]=R[-1]C[-8],OR(RC[-4]-R[-1]C[-4]<0.01)),1,0)"
+    
+
+    Range("I3").Select
+    Selection.AutoFill Destination:=Range("I3:I" + Trim(hang))
+    Range("I" + Trim(hang + 1)).Select
+    
+    Range("A1").Select
+    Selection.AutoFilter
+    ActiveSheet.Range("$A$1:$I$" + Trim(hang)).AutoFilter Field:=9, Criteria1:="0"
+    Cells.Select
+    Selection.Copy
+    Sheets.Add After:=ActiveSheet
+    Cells.Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    ActiveSheet.Select
+    ActiveSheet.Name = "检查类_去重后"
+    
+    Range("A1").Select
+    
+End Sub
+
+
+Sub 新建表粘贴删除重复项例子()
+
+'    ActiveSheet.Select
+'    ActiveSheet.Copy Before:=ActiveSheet
+    
+'    Columns("H:I").Select
+'    Selection.Copy
+'    Columns("H:I").Select
+'    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    
+    Cells.Select
+    Selection.Copy
+    Sheets.Add After:=ActiveSheet
+    Cells.Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    ActiveSheet.Select
+    ActiveSheet.Name = "检查类_去重后"
+    
+    
+    Dim k, newh
+    k = 2
+    newh = hang
+    While (k <= newh)
+        If Range("I" + Trim(k)).Value = 1 Then
+'            Rows(Trim(k) + ":" + Trim(k)).Select
+'            Selection.Delete Shift:=xlUp
+            Rows(k).Delete Shift:=xlUp
+            k = k - 1
+            newh = newh - 1
+        End If
+    k = k + 1
+    Wend
+    
+End Sub
+
